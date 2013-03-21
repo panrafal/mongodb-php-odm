@@ -1236,6 +1236,8 @@ class Mongo_Collection implements Iterator, Countable
     return $this->db()->command_safe($options);
   }
 
+  /** Returns distinct result as 
+   * ['values' => [...]] */
   public function distinct($key, $query = array())
   {
     return $this->db()->command_safe(array(
