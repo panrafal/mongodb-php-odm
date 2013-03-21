@@ -83,6 +83,11 @@ class Mongo_Database {
    * @var   string     default db to use
    */
   public static $default = 'default';
+  
+  /**
+   * @var default WriteConcern for new client driver. Set to 0 for backwards compatibility
+   */
+  public static $defaultWriteConcern = 0;
 
   /**
    * Get a Mongo_Database instance. Configuration options are:
@@ -171,7 +176,8 @@ class Mongo_Database {
 
     // Setup connection options merged over the defaults and store the connection
     $options = array(
-      'connect' => FALSE  // Do not connect yet
+      'connect' => FALSE,  // Do not connect yet
+      'w' => self::$defaultWriteConcern  
     );
     if(isset($config['options']))
       $options = array_merge($options, $config['options']);
@@ -181,7 +187,13 @@ class Mongo_Database {
                 ? $config['server']
                 : "mongodb://".ini_get('mongo.default_host').":".ini_get('mongo.default_port');
 
-    $this->_connection = new Mongo($server, $options);
+    if (class_exists('MongoClient') && !isset($options['legacy'])) { // 1.3 driver
+      $this->_connection = new MongoClient($server, $options);
+    } else {
+      unset($options['w']);
+      unset($options['legacy']);
+      $this->_connection = new Mongo($server, $options);
+    }
     
     // Save the database name for later use
     $this->_db = $config['database'];
