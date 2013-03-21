@@ -235,5 +235,14 @@ class MongoTest extends PHPUnit_Framework_TestCase {
     ];
   }
 
+  public function testDocumentSave_safe() {
+    $doc = new Model_Test_Document();
+    $doc->hello = 'world';
+    // two ops on same prop are illegal!
+    $doc->push('foo', 'bar');
+    $doc->pull('foo', 'baz');
+    $this->setExpectedException('MongoCursorException', 'Field name duplication not allowed with modifiers');
+    $doc->save();
+  }
 }
 
