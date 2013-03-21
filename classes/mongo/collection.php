@@ -730,7 +730,7 @@ class Mongo_Collection implements Iterator, Countable
     }
 
     // According to the driver docs an exception should have already been thrown if there was an error, but just in case...
-    if( ! $result['ok']) {
+    if( isset($result['err']) ) {
       throw new MongoException($result['err']);
     }
 

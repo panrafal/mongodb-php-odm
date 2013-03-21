@@ -1289,9 +1289,9 @@ abstract class Mongo_Document implements ArrayAccess {
       /** @todo  Combine operations into the insert when possible to avoid this update */
       if($this->_operations)
       {
-        if( ! $this->collection()->update(array('_id' => $this->_object['_id']), $this->_operations))
+        if( ! $this->collection()->update(array('_id' => $this->_object['_id']), $this->_operations, $options))
         {
-          $err = $this->db()->last_error();
+          $err = $this->db()->lastError();
           throw new MongoException('Update of '.get_class($this).' failed: '.$err['err']);
         }
       }
@@ -1314,9 +1314,9 @@ abstract class Mongo_Document implements ArrayAccess {
 
       if($this->_operations)
       {
-        if( ! $this->collection()->update(array('_id' => $this->_object['_id']), $this->_operations))
+        if( ! $this->collection()->update(array('_id' => $this->_object['_id']), $this->_operations, $options))
         {
-          $err = $this->db()->last_error();
+          $err = $this->db()->lastError();
           throw new MongoException('Update of '.get_class($this).' failed: '.$err['err']);
         }
       }
@@ -1402,7 +1402,7 @@ abstract class Mongo_Document implements ArrayAccess {
 
     if( ! $this->collection()->update($this->_object, $operations, array('upsert' => TRUE)))
     {
-      $err = $this->db()->last_error();
+      $err = $this->db()->lastError();
       throw new MongoException('Upsert of '.get_class($this).' failed: '.$err['err']);
     }
 
