@@ -42,12 +42,18 @@ class MongoTest extends PHPUnit_Framework_TestCase {
   /** @var Mongo_Database */
   protected $db;
 
+  public static function setUpBeforeClass()
+  {
+    Mongo_Database::$configs['mongotest'] = array(
+        'database' => 'mongotest',
+        'options' => array('w' => 1)
+    //                    'profiling' => TRUE
+    );
+  }
+
   protected function setUp()
   {
-    $this->db = Mongo_Database::instance('mongotest', array(
-                'database' => 'mongotest',
-//                    'profiling' => TRUE
-            ));
+    $this->db = Mongo_Database::instance('mongotest', null, true);
 
     $this->db->createCollection('mongotest');
     $this->db->mongotest->remove(array());
@@ -235,5 +241,28 @@ class MongoTest extends PHPUnit_Framework_TestCase {
     ];
   }
 
+  public function testDocumentSave_safe() {
+    $doc = new Model_Test_Document();
+    $doc->hello = 'world';
+    // two ops on same prop are illegal!
+    $doc->push('foo', 'bar');
+    $doc->pull('foo', 'baz');
+    $this->setExpectedException('MongoCursorException', 'Field name duplication not allowed with modifiers');
+    $doc->save();
+  }
+
+  public function testWriteConcern_on() {
+    $col = Mongo_Document::factory('test_document')->collection();
+    // two ops on same prop are illegal!
+    $this->setExpectedException('MongoCursorException', 'Field name duplication not allowed with modifiers');
+    $col->update(array('_id' => 'foo'), array('$push' => array('foo' => 'bar'), '$pull' => array('foo' => 'bar')));
+  }  
+
+  public function testWriteConcern_off() {
+    $col = Mongo_Document::factory('test_document')->collection();
+    // two ops on same prop are illegal! but it still should work...
+    $col->update(array('_id' => 'foo'), array('$push' => array('foo' => 'bar'), '$pull' => array('foo' => 'bar')), array('w' => 0));
+  }  
+  
 }
 
